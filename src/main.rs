@@ -1,15 +1,16 @@
 extern crate sdl2;
+extern crate time;
+
 mod types;
 mod ui;
 
-use sdl2::event::Event;
-use std::{thread, time};
+use std::thread;
 use std::boxed::Box;
 use std::sync::{Arc, RwLock};
 use types::{UISync, UIEvent, Playfield};
 
-const PLAYFIELD_WIDTH: i32 = 4096;
-const PLAYFIELD_HEIGHT: i32 = 4096;
+const PLAYFIELD_WIDTH: i32 = 300;
+const PLAYFIELD_HEIGHT: i32 = 200;
 
 
 fn main() {
@@ -42,7 +43,7 @@ fn main() {
             running = uisync.running;
         }
         if running {
-            thread::sleep(time::Duration::from_millis(10));
+            thread::sleep(std::time::Duration::from_millis(10));
         } else {
             break;
         }

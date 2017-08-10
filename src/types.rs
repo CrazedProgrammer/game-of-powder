@@ -8,7 +8,7 @@ pub enum UIEvent {
 }
 
 
-
+#[derive(Clone)]
 pub struct Playfield {
     pub width: i32,
     pub height: i32,
@@ -46,6 +46,7 @@ impl Playfield {
         self.data[(x + y * self.width) as usize].clone()
     }
 
+    #[inline]
     pub fn read_nowrap(&self, x: i32, y: i32) -> Block {
         if self.inside(x, y) {
             self.data[(x + y * self.width) as usize].clone()
