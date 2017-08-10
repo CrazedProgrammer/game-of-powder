@@ -5,12 +5,9 @@ mod types;
 mod ui;
 
 use std::thread;
-use std::boxed::Box;
 use std::sync::{Arc, RwLock};
-use types::{UISync, UIEvent, Playfield};
+use types::{UISync, UIEvent, Playfield, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
 
-const PLAYFIELD_WIDTH: i32 = 300;
-const PLAYFIELD_HEIGHT: i32 = 200;
 
 
 fn main() {
@@ -20,7 +17,7 @@ fn main() {
     {
         let playfield = playfield.clone();
         let uisync = uisync.clone();
-        let child = thread::spawn(move || {
+        thread::spawn(move || {
             ui::run(uisync, playfield);
         });
     }

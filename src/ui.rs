@@ -5,12 +5,11 @@ use std::sync::{Arc, RwLock};
 use std::collections::HashMap;
 use sdl2::rect::{Point, Rect};
 use sdl2::event::{Event, WindowEvent};
-use sdl2::render::{Canvas, Texture, TextureCreator};
-use sdl2::surface::Surface;
-use sdl2::video::{Window, WindowContext};
+use sdl2::render::{Canvas};
+use sdl2::video::{Window};
 use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::keyboard::Keycode;
-use types::{Block, Viewport, FPoint, Playfield, UISync, UIEvent};
+use types::{Block, Viewport, Playfield, UISync, UIEvent, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
 
 
 
@@ -33,7 +32,7 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
     let texture_creator = canvas.texture_creator();
     let mut event_pump = sdl_context.event_pump().unwrap();
 
-    let mut viewport = Viewport { x: 2048.0, y: 2048.0, width: 0.0, height: 0.0, zoom: 1.0 };
+    let mut viewport = Viewport { x: PLAYFIELD_WIDTH as f32 / 2.0, y: PLAYFIELD_HEIGHT as f32 / 2.0, width: 0.0, height: 0.0, zoom: 1.0 };
     recalculate_viewport(&mut viewport, &canvas);
     let mut render_target;
     {
@@ -78,18 +77,12 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
                         }
                     },
 
-                    Event::MouseButtonDown {x, y, mouse_btn, ..} => {
-                        let block_point = window_to_viewport(x, y, viewport);
-                        uisync.events.push(UIEvent::SpawnBlock {x: block_point.x, y: block_point.y, block: Block::Full});
-                        println!("epic dude {} {}", block_point.x, block_point.y);
-                    },
-
                     Event::MouseMotion {x, y, ..} => {
                         let block_point = window_to_viewport(x, y, viewport);
                         uisync.events.push(UIEvent::SpawnBlock {x: block_point.x, y: block_point.y, block: Block::Full});
                     },
 
-                    Event::MouseWheel {direction, ..} => {
+                    Event::MouseWheel {..} => {
                         viewport.zoom = viewport.zoom % 10.0 + 1.0;
                         draw_full = true;
                         recalculate_viewport(&mut viewport, &canvas);
@@ -103,13 +96,13 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
         let playfield = playfield.read().unwrap();
         canvas.with_texture_canvas(&mut render_target, |mut texture_canvas| {
             draw(&playfield, &prev_playfield, &mut texture_canvas, viewport, &block_colors, draw_full);
-        });
+        }).unwrap();
         {
             let window_size = canvas.window().size();
-            canvas.copy_ex(&render_target, None, Rect::new(0, 0, window_size.0, window_size.1), 0.0, Some(Point::new(window_size.0 as i32, window_size.1 as i32)), false, false);
+            canvas.copy_ex(&render_target, None, Rect::new(0, 0, window_size.0, window_size.1), 0.0, Some(Point::new(window_size.0 as i32, window_size.1 as i32)), false, false).unwrap();
         }
         if draw_full {
-            draw_full = true;
+            draw_full = false;
         }
         prev_playfield = playfield.clone();
 
@@ -138,7 +131,7 @@ fn recalculate_viewport(viewport: &mut Viewport, canvas: &Canvas<Window>)
 fn draw(playfield: &Playfield, prev_playfield: &Playfield, canvas: &mut Canvas<Window>, viewport: Viewport, block_colors: &HashMap<Block, Color>, draw_full: bool) {
     let mut current_color = Color::RGB(234, 92, 193);
     if draw_full {
-        current_color = block_colors[&Block::Empty];
+        current_color = block_colors[&Block::Full];
         canvas.set_draw_color(current_color);
         canvas.clear();
     }
@@ -153,9 +146,6 @@ fn draw(playfield: &Playfield, prev_playfield: &Playfield, canvas: &mut Canvas<W
                     continue;
                 }
             }
-            if block == Block::Full {
-                        println!("ayy lmao");
-            }
             let block_window_point = viewport_to_window(block_viewport_x, block_viewport_y, viewport);
             let block_window_point_next = viewport_to_window(block_viewport_x + 1, block_viewport_y + 1, viewport);
             let block_window_width = (block_window_point_next.x - block_window_point.x) as u32;
@@ -165,7 +155,7 @@ fn draw(playfield: &Playfield, prev_playfield: &Playfield, canvas: &mut Canvas<W
                 canvas.set_draw_color(block_color);
                 current_color = block_color;
             }
-            canvas.fill_rect(Rect::new(block_window_point.x, block_window_point.y, block_window_width, block_window_height));
+            canvas.fill_rect(Rect::new(block_window_point.x, block_window_point.y, block_window_width, block_window_height)).unwrap();
         }
     }
 
