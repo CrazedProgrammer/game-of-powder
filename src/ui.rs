@@ -115,9 +115,7 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
         }
     }
 
-    {
-        uisync.write().unwrap().running = false;
-    }
+    uisync.write().unwrap().running = false;
 }
 
 fn recalculate_viewport(viewport: &mut Viewport, canvas: &Canvas<Window>)
@@ -136,8 +134,8 @@ fn draw(playfield: &Playfield, prev_playfield: &Playfield, canvas: &mut Canvas<W
         canvas.clear();
     }
 
-    for j in 0..((viewport.height + 1.0) as u32) {
-        for i in 0..((viewport.width + 1.0) as u32) {
+    for j in 0..((viewport.height + 2.0) as u32) {
+        for i in 0..((viewport.width + 2.0) as u32) {
             let block_viewport_x = i as i32 + (viewport.x - viewport.width / 2.0) as i32;
             let block_viewport_y = j as i32 + (viewport.y - viewport.height / 2.0) as i32;
             let block = playfield.read_nowrap(block_viewport_x, block_viewport_y);
