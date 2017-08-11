@@ -1,4 +1,3 @@
-use std::thread;
 use time;
 use std::sync::{Arc, RwLock};
 use types::{Block, Playfield, UISync, UIEvent};
