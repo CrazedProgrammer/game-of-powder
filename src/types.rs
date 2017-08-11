@@ -31,29 +31,33 @@ impl Playfield {
         x >= 0 && x < self.width && y >= 0 && y < self.height
     }
 
+    #[inline]
     pub fn write(&mut self, x: i32, y: i32, block: Block) {
-        let x = x % self.width;
-        let y = y % self.height;
         self.data[(x + y * self.width) as usize] = block;
     }
 
     pub fn write_nowrap(&mut self, x: i32, y: i32, block: Block) {
         if self.inside(x, y) {
-            self.data[(x + y * self.width) as usize] = block;
+            self.write(x, y, block);
         }
     }
 
     #[inline]
     pub fn read(&self, x: i32, y: i32) -> Block {
-        let x = x % self.width;
-        let y = y % self.height;
         self.data[(x + y * self.width) as usize].clone()
+    }
+
+    #[inline]
+    pub fn read_wrap(&self, x: i32, y: i32) -> Block {
+        let x = (x % self.width) + x;
+        let y = (y % self.height) + x;
+        self.read(x, y)
     }
 
     #[inline]
     pub fn read_nowrap(&self, x: i32, y: i32) -> Block {
         if self.inside(x, y) {
-            self.data[(x + y * self.width) as usize].clone()
+            self.read(x, y)
         } else {
             Block::Empty
         }

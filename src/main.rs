@@ -3,10 +3,11 @@ extern crate time;
 
 mod types;
 mod ui;
+mod sim;
 
 use std::thread;
 use std::sync::{Arc, RwLock};
-use types::{UISync, UIEvent, Playfield, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
+use types::{UISync, Playfield, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
 
 
 
@@ -24,25 +25,5 @@ fn main() {
 
     let uisync = uisync.clone();
     let playfield_local = playfield.clone();
-    loop {
-        let running;
-        {
-            let mut uisync = uisync.write().unwrap();
-            for event in &uisync.events {
-                match *event {
-                    UIEvent::SpawnBlock {x, y, block} => {
-                        let mut playfield = playfield_local.write().unwrap();
-                        playfield.write_nowrap(x, y, block);
-                    },
-                }
-            }
-            uisync.events.clear();
-            running = uisync.running;
-        }
-        if running {
-            thread::sleep(std::time::Duration::from_millis(10));
-        } else {
-            break;
-        }
-    }
+    sim::main_loop(playfield_local, uisync);
 }
