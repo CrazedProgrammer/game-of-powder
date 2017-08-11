@@ -1,6 +1,3 @@
-pub const PLAYFIELD_WIDTH: i32 = 2000;
-pub const PLAYFIELD_HEIGHT: i32 = 2000;
-
 pub struct UISync {
     pub running: bool,
     pub events: Vec<UIEvent>,
@@ -49,8 +46,14 @@ impl Playfield {
 
     #[inline]
     pub fn read_wrap(&self, x: i32, y: i32) -> Block {
-        let x = (x % self.width) + x;
-        let y = (y % self.height) + x;
+        let mut x = x % self.width;
+        let mut y = y % self.height;
+        while x < 0 {
+            x += self.width;
+        }
+        while y < 0 {
+            y += self.height;
+        }
         self.read(x, y)
     }
 

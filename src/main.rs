@@ -4,10 +4,12 @@ extern crate time;
 mod types;
 mod ui;
 mod sim;
+mod constants;
 
 use std::thread;
 use std::sync::{Arc, RwLock};
-use types::{UISync, Playfield, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
+use types::{UISync, Playfield};
+use constants::{PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
 
 
 

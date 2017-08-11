@@ -1,11 +1,16 @@
 use std::thread;
-use std::time;
+use time;
 use std::sync::{Arc, RwLock};
-use types::{Block, Playfield, UISync, UIEvent, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
+use types::{Block, Playfield, UISync, UIEvent};
+use constants::{PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT, TICK_COUNT_INTERVAL};
 
 pub fn main_loop(playfield: Arc<RwLock<Playfield>>, uisync: Arc<RwLock<UISync>>)
 {
     let mut next_playfield = Playfield::new(PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT);
+
+    let mut prev_nano_time = time::precise_time_ns();
+    let mut frame_counter = 0u64;
+
     loop {
         let running;
         {
@@ -39,8 +44,15 @@ pub fn main_loop(playfield: Arc<RwLock<Playfield>>, uisync: Arc<RwLock<UISync>>)
             }
             running = uisync.read().unwrap().running;
         }
+        frame_counter += 1;
+        let nano_time = time::precise_time_ns();
+        if (nano_time - prev_nano_time) >= 1000000000u64 * TICK_COUNT_INTERVAL {
+            println!("TPS: {}", frame_counter / TICK_COUNT_INTERVAL);
+            frame_counter = 0u64;
+            prev_nano_time = nano_time;
+        }
+
         if running {
-            thread::sleep(time::Duration::from_millis(10));
         } else {
             break;
         }
@@ -67,28 +79,28 @@ fn simulate_block(playfield: &Playfield, x: i32, y: i32) -> Block {
 #[inline]
 fn count_neighbors(playfield: &Playfield, x: i32, y: i32) -> u32 {
     let mut count = 0u32;
-    if playfield.read_nowrap(x - 1, y - 1) == Block::Full {
+    if playfield.read_wrap(x - 1, y - 1) == Block::Full {
         count += 1;
     }
-    if playfield.read_nowrap(x, y - 1) == Block::Full {
+    if playfield.read_wrap(x, y - 1) == Block::Full {
         count += 1;
     }
-    if playfield.read_nowrap(x + 1, y - 1) == Block::Full {
+    if playfield.read_wrap(x + 1, y - 1) == Block::Full {
         count += 1;
     }
-    if playfield.read_nowrap(x - 1, y) == Block::Full {
+    if playfield.read_wrap(x - 1, y) == Block::Full {
         count += 1;
     }
-    if playfield.read_nowrap(x + 1, y) == Block::Full {
+    if playfield.read_wrap(x + 1, y) == Block::Full {
         count += 1;
     }
-    if playfield.read_nowrap(x - 1, y + 1) == Block::Full {
+    if playfield.read_wrap(x - 1, y + 1) == Block::Full {
         count += 1;
     }
-    if playfield.read_nowrap(x, y + 1) == Block::Full {
+    if playfield.read_wrap(x, y + 1) == Block::Full {
         count += 1;
     }
-    if playfield.read_nowrap(x + 1, y + 1) == Block::Full {
+    if playfield.read_wrap(x + 1, y + 1) == Block::Full {
         count += 1;
     }
     count

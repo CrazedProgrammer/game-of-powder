@@ -9,7 +9,8 @@ use sdl2::render::{Canvas};
 use sdl2::video::{Window};
 use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::keyboard::Keycode;
-use types::{Block, Viewport, Playfield, UISync, UIEvent, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
+use types::{Block, Viewport, Playfield, UISync, UIEvent};
+use constants::{PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT, TICK_COUNT_INTERVAL};
 
 
 
@@ -41,8 +42,9 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
             .create_texture_target(PixelFormatEnum::RGB888, window_size.0, window_size.1)
             .unwrap();
     }
+
     let mut prev_nano_time = time::precise_time_ns();
-    let mut frame_counter = 0;
+    let mut frame_counter = 0u64;
 
     let mut draw_full = true;
     let mut prev_playfield = Playfield::new(0, 0); // this is not possibly uninitialised.
@@ -108,9 +110,9 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
 
         frame_counter += 1;
         let nano_time = time::precise_time_ns();
-        if (nano_time - prev_nano_time) >= 1000000000u64 {
-            println!("FPS: {} Viewport width: {} height: {}", frame_counter, viewport.width, viewport.height);
-            frame_counter = 0;
+        if (nano_time - prev_nano_time) >= 1000000000u64 * TICK_COUNT_INTERVAL {
+            println!("FPS: {} Viewport width: {} height: {}", frame_counter / TICK_COUNT_INTERVAL, viewport.width, viewport.height);
+            frame_counter = 0u64;
             prev_nano_time = nano_time;
         }
     }
