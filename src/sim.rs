@@ -8,23 +8,24 @@ pub fn main_loop(playfield: Arc<RwLock<Playfield>>, uisync: Arc<RwLock<UISync>>)
     let mut next_playfield = Playfield::new(PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT);
 
     let mut prev_nano_time = time::precise_time_ns();
-    let mut frame_counter = 0u64;
+    let mut tick_counter = 0u64;
 
     loop {
         let running;
         {
-            {
-                let mut playfield = playfield.write().unwrap();
-                let mut uisync = uisync.write().unwrap();
-                for event in &uisync.events {
-                    match *event {
-                        UIEvent::SpawnBlock {x, y, block} => {
-                            playfield.write_nowrap(x, y, block);
-                        },
-                    }
+            let mut playfield = playfield.write().unwrap();
+            let mut uisync = uisync.write().unwrap();
+            for event in &uisync.events {
+                match *event {
+                    UIEvent::SpawnBlock {x, y, block} => {
+                        playfield.write_nowrap(x, y, block);
+                    },
                 }
-                uisync.events.clear();
             }
+            uisync.events.clear();
+            running = uisync.running;
+        }
+        if running {
             {
                 let playfield = playfield.read().unwrap();
                 for j in 0..playfield.height {
@@ -41,20 +42,20 @@ pub fn main_loop(playfield: Arc<RwLock<Playfield>>, uisync: Arc<RwLock<UISync>>)
                     }
                 }
             }
-            {
-                running = uisync.read().unwrap().running;
-            }
+            tick_counter += 1;
         }
-        frame_counter += 1;
+        let exit;
+        {
+            exit = uisync.read().unwrap().exit;
+        }
         let nano_time = time::precise_time_ns();
         if (nano_time - prev_nano_time) >= 1000000000u64 * TICK_COUNT_INTERVAL {
-            println!("TPS: {}", frame_counter / TICK_COUNT_INTERVAL);
-            frame_counter = 0u64;
+            println!("TPS: {}", tick_counter / TICK_COUNT_INTERVAL);
+            tick_counter = 0u64;
             prev_nano_time = nano_time;
         }
 
-        if running {
-        } else {
+        if exit {
             break;
         }
     }

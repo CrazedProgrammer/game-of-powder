@@ -15,7 +15,7 @@ use constants::{PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT};
 
 fn main() {
     let playfield = Arc::new(RwLock::new(Playfield::new(PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT)));
-    let uisync = Arc::new(RwLock::new(UISync{ running: true, events: vec![] }));
+    let uisync = Arc::new(RwLock::new(UISync{ running: true, exit: false, events: vec![] }));
 
     {
         let playfield = playfield.clone();

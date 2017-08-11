@@ -55,7 +55,7 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
             let mut uisync = uisync.write().unwrap();
             for event in event_pump.poll_iter() {
                 match event {
-                    Event::Quit {..} => break 'event_loop,
+                    Event::Quit {..} => { break 'event_loop; },
 
                     Event::Window {win_event, ..} => {
                         match win_event {
@@ -74,7 +74,10 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
 
                     Event::KeyDown {keycode: Some(keycode), ..} => {
                         match keycode {
-                            Keycode::Escape => {break 'event_loop},
+                            Keycode::Escape => { break 'event_loop; },
+                            Keycode::Space => {
+                                uisync.running = !uisync.running;
+                            },
                             _ => {},
                         }
                     },
@@ -117,7 +120,7 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
         }
     }
     {
-        uisync.write().unwrap().running = false;
+        uisync.write().unwrap().exit = true;
     }
 }
 

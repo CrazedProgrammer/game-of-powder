@@ -1,5 +1,6 @@
 pub struct UISync {
     pub running: bool,
+    pub exit: bool,
     pub events: Vec<UIEvent>,
 }
 
