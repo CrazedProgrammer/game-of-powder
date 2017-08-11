@@ -42,7 +42,9 @@ pub fn main_loop(playfield: Arc<RwLock<Playfield>>, uisync: Arc<RwLock<UISync>>)
                     }
                 }
             }
-            running = uisync.read().unwrap().running;
+            {
+                running = uisync.read().unwrap().running;
+            }
         }
         frame_counter += 1;
         let nano_time = time::precise_time_ns();

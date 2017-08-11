@@ -95,18 +95,18 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
                 }
             }
         }
-        let playfield = playfield.read().unwrap();
-        canvas.with_texture_canvas(&mut render_target, |mut texture_canvas| {
-            draw(&playfield, &prev_playfield, &mut texture_canvas, viewport, &block_colors, draw_full);
-        }).unwrap();
         {
-            let window_size = canvas.window().size();
-            canvas.copy_ex(&render_target, None, Rect::new(0, 0, window_size.0, window_size.1), 0.0, Some(Point::new(window_size.0 as i32, window_size.1 as i32)), false, false).unwrap();
+            let playfield = playfield.read().unwrap();
+            canvas.with_texture_canvas(&mut render_target, |mut texture_canvas| {
+                draw(&playfield, &prev_playfield, &mut texture_canvas, viewport, &block_colors, draw_full);
+            }).unwrap();
+            prev_playfield = playfield.clone();
         }
+        let window_size = canvas.window().size();
+        canvas.copy_ex(&render_target, None, Rect::new(0, 0, window_size.0, window_size.1), 0.0, Some(Point::new(window_size.0 as i32, window_size.1 as i32)), false, false).unwrap();
         if draw_full {
             draw_full = false;
         }
-        prev_playfield = playfield.clone();
 
         frame_counter += 1;
         let nano_time = time::precise_time_ns();
@@ -116,8 +116,9 @@ pub fn run(uisync: Arc<RwLock<UISync>>, playfield: Arc<RwLock<Playfield>>) {
             prev_nano_time = nano_time;
         }
     }
-
-    uisync.write().unwrap().running = false;
+    {
+        uisync.write().unwrap().running = false;
+    }
 }
 
 fn recalculate_viewport(viewport: &mut Viewport, canvas: &Canvas<Window>)
